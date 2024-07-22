@@ -1,23 +1,50 @@
 import { getAllDocument } from "../config/database.js";
+import {
+  ADMIN_PASSWORD,
+  ADMIN_TOKEN,
+  ADMIN_USERNAME,
+} from "../constants/adminAccount.js";
 
 class AdminController {
   constructor() {
-    this.showIndex = this.showIndex.bind(this);
+    this.adminLogin = this.adminLogin.bind(this);
   }
 
-  showIndex = async (req, res) => {
+  adminLogin = async (req, res) => {
     try {
-      await connectToDatabase();
-      const listData = await getAllDocument("key_cash");
+      const adminData = {
+        username: req.body.username,
+        password: req.body.password,
+      };
 
-      if (listData.length > 0) {
-        await closeConnection();
-        return res.render("admin/index", { listData });
+      if (!adminData.username || !adminData.password) {
+        return res.status(400).json({
+          status: 400,
+          message: "Please input username or password",
+        });
       }
-      await closeConnection();
-      return res.render("admin/index", { listData });
+
+      if (
+        adminData.username == ADMIN_USERNAME &&
+        adminData.password === ADMIN_PASSWORD
+      ) {
+        res.cookie("adminToken", ADMIN_TOKEN, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 24 * 60 * 60 * 1000,
+        });
+        return res.status(200).json({
+          status: 200,
+          message: "Login success!",
+        });
+      }
+
+      return res.status(404).json({
+        status: 404,
+        message: "Wrong username or password",
+      });
     } catch (error) {
-      return res.json({ message: "Error" });
+      console.log(error);
     }
   };
 }
