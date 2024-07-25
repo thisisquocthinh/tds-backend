@@ -2,6 +2,8 @@ import express from "express";
 import KeyRouter from "./app/routes/key.js";
 import UserRouter from "./app/routes/userRouter.js";
 import AdminRouter from "./app/routes/adminRouter.js";
+import PaymentRouter from "./app/routes/paymentRouter.js";
+import WebhookRouter from "./app/routes/webhookRouter.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
@@ -18,7 +20,13 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/api/v1", [UserRouter, AdminRouter, KeyRouter]);
+app.use("/api/v1", [
+  UserRouter,
+  AdminRouter,
+  KeyRouter,
+  PaymentRouter,
+  WebhookRouter,
+]);
 
 // Khởi động server
 const PORT = process.env.PORT || 8000;
