@@ -3,18 +3,19 @@ import { config } from "dotenv";
 
 config({ path: ".env" });
 
-const API_URL = process.env.TDS_API_URL;
+const API_URL = process.env.CASSO_API_URL;
 
-const reqInstance = axios.create({
+const cassoReqInstance = axios.create({
   baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
+    Authorization: `Apikey ${process.env.API_KEY_CASSO}`,
   },
 });
 
 // Response interceptors for API calls
-reqInstance.interceptors.response.use(
+cassoReqInstance.interceptors.response.use(
   (response) => {
     if (response && response.data) {
       return response.data;
@@ -27,7 +28,7 @@ reqInstance.interceptors.response.use(
 );
 
 // Request interceptors for API calls
-reqInstance.interceptors.request.use(
+cassoReqInstance.interceptors.request.use(
   (config) => {
     return config;
   },
@@ -36,4 +37,4 @@ reqInstance.interceptors.request.use(
   }
 );
 
-export default reqInstance;
+export default cassoReqInstance;

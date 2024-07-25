@@ -1,8 +1,9 @@
+import cassoReqInstance from "../config/cassoReqInstance.js";
 import reqInstance from "../config/reqInstance.js";
 
 class ApiServices {
-  constructor() {
-    this.service = reqInstance;
+  constructor(useCasso = false) {
+    this.service = useCasso ? cassoReqInstance : reqInstance;
   }
 
   handleErrorResponse = (err) => {
@@ -33,6 +34,7 @@ class ApiServices {
         let message = "";
         message = this.handleErrorResponse(err);
         const error = new Error(message);
+        console.log(error);
         return Promise.reject(error);
       });
   };
@@ -74,8 +76,30 @@ class ApiServices {
         return Promise.reject(error);
       });
   }
+
+  async delete(path, payload) {
+    return this.service
+      .request({
+        method: "DELETE",
+        url: path,
+        responseType: "json",
+        data: payload,
+      })
+      .then((data) => {
+        return data;
+      })
+      .catch((err) => {
+        let message = "";
+        message = this.handleErrorResponse(err);
+        const error = new Error(message);
+        return Promise.reject(error);
+      });
+  }
 }
 
 const ApiService = new ApiServices();
+const ApiServiceCasso = new ApiServices(true);
+
+export { ApiService, ApiServiceCasso };
 
 export default ApiService;

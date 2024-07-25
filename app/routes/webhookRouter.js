@@ -7,6 +7,12 @@ const webhookController = new WebhookController();
 
 // for index
 
-router.post("/webhook-event-handler", webhookController.webhookEventHandler);
+router.post(
+  "/webhook/handler-bank-transfer",
+  webhookController.handleBankTransfer
+);
+
+router.post("/register-webhook", webhookController.registerWebhook);
+router.post("/user-paid", webhookController.userPaid);
 
 export default router;
