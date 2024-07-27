@@ -1,5 +1,7 @@
+import { ObjectId } from "mongodb";
 import ApiService, { ApiServiceCasso } from "../utils/ApiServices.js";
 import { config } from "dotenv";
+import { countDocuments, getAllDocument } from "../config/database.js";
 
 config({ path: ".env" });
 
@@ -15,7 +17,38 @@ class WebhookController {
     this.deleteWebhookByUrl = this.deleteWebhookByUrl.bind(this);
     this.getDetailUser = this.getDetailUser.bind(this);
     this.handleBankTransfer = this.handleBankTransfer.bind(this);
+    this.createWebhook = this.createWebhook.bind(this);
+    this.deleteWebhookById = this.deleteWebhookById.bind(this);
   }
+
+  generateContent = async () => {
+    try {
+      const estimateData = await countDocuments("order");
+      let newId;
+      if (estimateData === 0) {
+        newId = "0001";
+      }
+
+      const maxContentNumber = 0;
+      const orderData = await getAllDocument("order");
+      orderData.forEach((order) => {
+        const match = order.content.match(/\d+$/);
+        if (match) {
+          const contentNumber = parseInt(match[0], 10);
+          if (contentNumber > maxContentNumber) {
+            maxContentNumber = contentNumber;
+          }
+        }
+      });
+
+      const newContentNumber = (maxContentNumber + 1)
+        .toString()
+        .padStart(5, "0");
+      return `OSTE ${newContentNumber}`;
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   handleBankTransfer = (req, res, next) => {
     try {
@@ -28,6 +61,7 @@ class WebhookController {
           message: "Missing secure-token or wrong secure-token",
         });
       }
+      let validTransactions = [];
       for (let item of req.body.data) {
         let orderId = this.parseOrderId(
           case_insensitive,
@@ -40,11 +74,20 @@ class WebhookController {
           expiration_date
         )
           continue;
+
+        if (item.description.includes("OSTE")) {
+          validTransactions.push({
+            orderId: orderId,
+            description: item.description,
+            amount: item.amount,
+            date: item.when,
+          });
+        }
       }
       return res.status(200).json({
         code: 200,
         message: "success",
-        data: null,
+        data: validTransactions,
       });
     } catch (error) {
       console.log(error);
@@ -152,3 +195,6 @@ class WebhookController {
 }
 
 export default WebhookController;
+
+// const webhookController = new WebhookController();
+// console.log(await webhookController.generateContent());
