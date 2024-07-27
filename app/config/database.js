@@ -51,3 +51,16 @@ export const getAllDocument = async (collectionName, query, options) => {
     await client.close();
   }
 };
+
+export const countDocuments = async (collectionName) => {
+  try {
+    await client.connect();
+    const database = client.db("TDSTiktok");
+    const collection = database.collection(collectionName);
+
+    const estimate = await collection.estimatedDocumentCount();
+    return estimate;
+  } finally {
+    await client.close();
+  }
+};
